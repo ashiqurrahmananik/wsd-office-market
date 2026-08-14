@@ -56,7 +56,7 @@ export default async function AdminPage() {
           const lb=(bids||[]).filter((b:any)=>b.listing_id===l.id).sort((a:any,b:any)=>Number(b.amount)-Number(a.amount))[0];
           return <div className="card flex flex-wrap items-center justify-between gap-4 p-5" key={l.id}>
             <div><div className="text-xs font-bold text-orange-600">{l.category}</div><div className="text-lg font-black">{l.title}</div><div className="text-sm text-stone-500">Seller: {profileName(l.profiles)} · Ends {new Date(l.bid_end_time).toLocaleString()}</div></div>
-            <div className="text-right"><div className="text-xs font-bold text-stone-500">Current bid</div><div className="text-2xl font-black">৳{lb?.amount ?? l.starting_bid ?? 0}</div><div className="text-sm">{Array.isArray(lb?.profiles) ? (lb?.profiles?.[0]?.display_name || "No bids yet") : (lb?.profiles?.display_name || "No bids yet")}</div></div>
+            <div className="text-right"><div className="text-xs font-bold text-stone-500">Current bid</div><div className="text-2xl font-black">৳{lb?.amount ?? l.starting_bid ?? 0}</div><div className="text-sm">{profileName(lb?.profiles, "No bids yet")}</div></div>
           </div>
         }):<div className="card p-8 text-center text-stone-500">No live auctions right now.</div>}
       </div>
