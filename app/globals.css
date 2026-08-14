@@ -1,0 +1,7 @@
+@import "tailwindcss";
+:root{--cream:#fffaf2;--ink:#24211d;--orange:#f97316;--yellow:#facc15;--pink:#fb7185}
+*{box-sizing:border-box} body{margin:0;background:var(--cream);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+.card{border:1px solid #eee2d2;border-radius:24px;background:#fff;box-shadow:0 8px 30px rgba(75,45,10,.06)}
+.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:14px;padding:.75rem 1rem;font-weight:800;transition:.2s}
+.btn:hover{transform:translateY(-1px)} .btn-primary{background:#f97316;color:#fff}.btn-secondary{background:#fff1df;color:#9a4a0b}
+.input{width:100%;border:1px solid #e7dac8;border-radius:14px;padding:.8rem 1rem;background:white;outline:none}.input:focus{border-color:#f97316;box-shadow:0 0 0 3px #fed7aa}

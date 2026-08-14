@@ -1,0 +1,25 @@
+-- WSD Office Market database schema
+create extension if not exists pgcrypto;
+create type listing_category as enum ('Meal','Food','Cake','Drink','Snack','Dessert','Other');
+create type listing_status as enum ('AVAILABLE','SOLD','EXPIRED','BID_ENDED','CANCELLED');
+create type mood_type as enum ('😋 Hungry','🤤 Looks Delicious','😭 Can''t Eat Anymore','🥱 Too Much Food','🎉 Party Leftovers','💀 I''m Done','❤️ Take This Please','🔥 Must Sell NOW','🤑 Money Back','😂 Boss Gave Too Much');
+create table if not exists profiles(id uuid primary key references auth.users(id) on delete cascade,display_name text not null,avatar_url text,mood mood_type,created_at timestamptz default now(),updated_at timestamptz default now());
+create table if not exists listings(id uuid primary key default gen_random_uuid(),seller_id uuid not null references profiles(id) on delete cascade,title text not null,description text default '',image_url text,category listing_category not null,quantity int not null default 1,price numeric(12,2),pickup_location text not null,mood mood_type,buy_now_enabled boolean default true,bid_enabled boolean default false,starting_bid numeric(12,2),bid_start_time timestamptz,bid_end_time timestamptz,status listing_status default 'AVAILABLE',created_at timestamptz default now(),updated_at timestamptz default now());
+create table if not exists bids(id uuid primary key default gen_random_uuid(),listing_id uuid references listings(id) on delete cascade,bidder_id uuid references profiles(id) on delete cascade,amount numeric(12,2) not null,created_at timestamptz default now());
+create table if not exists purchases(id uuid primary key default gen_random_uuid(),listing_id uuid unique references listings(id),buyer_id uuid references profiles(id),seller_id uuid references profiles(id),amount numeric(12,2) not null,created_at timestamptz default now(),status text default 'CONFIRMED');
+create index if not exists listings_status_created on listings(status,created_at desc);
+create index if not exists bids_listing_amount on bids(listing_id,amount desc);
+alter table profiles enable row level security;
+alter table listings enable row level security;
+alter table bids enable row level security;
+alter table purchases enable row level security;
+create policy "public profiles" on profiles for select using(true);
+create policy "own profile insert" on profiles for insert with check(auth.uid()=id);
+create policy "own profile update" on profiles for update using(auth.uid()=id);
+create policy "public listings" on listings for select using(true);
+create policy "own listing insert" on listings for insert with check(auth.uid()=seller_id);
+create policy "own listing update" on listings for update using(auth.uid()=seller_id);
+create policy "own listing delete" on listings for delete using(auth.uid()=seller_id);
+create policy "relevant bids" on bids for select using(auth.uid()=bidder_id or exists(select 1 from listings where listings.id=bids.listing_id and listings.seller_id=auth.uid()));
+create policy "own bid insert" on bids for insert with check(auth.uid()=bidder_id);
+create policy "own purchases" on purchases for select using(auth.uid()=buyer_id or auth.uid()=seller_id);
