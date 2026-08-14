@@ -1,4 +1,3 @@
--- WSD Office Market database schema
 create extension if not exists pgcrypto;
 create type listing_category as enum ('Meal','Food','Cake','Drink','Snack','Dessert','Other');
 create type listing_status as enum ('AVAILABLE','SOLD','EXPIRED','BID_ENDED','CANCELLED');
@@ -9,10 +8,7 @@ create table if not exists bids(id uuid primary key default gen_random_uuid(),li
 create table if not exists purchases(id uuid primary key default gen_random_uuid(),listing_id uuid unique references listings(id),buyer_id uuid references profiles(id),seller_id uuid references profiles(id),amount numeric(12,2) not null,created_at timestamptz default now(),status text default 'CONFIRMED');
 create index if not exists listings_status_created on listings(status,created_at desc);
 create index if not exists bids_listing_amount on bids(listing_id,amount desc);
-alter table profiles enable row level security;
-alter table listings enable row level security;
-alter table bids enable row level security;
-alter table purchases enable row level security;
+alter table profiles enable row level security;alter table listings enable row level security;alter table bids enable row level security;alter table purchases enable row level security;
 create policy "public profiles" on profiles for select using(true);
 create policy "own profile insert" on profiles for insert with check(auth.uid()=id);
 create policy "own profile update" on profiles for update using(auth.uid()=id);
@@ -23,3 +19,34 @@ create policy "own listing delete" on listings for delete using(auth.uid()=selle
 create policy "relevant bids" on bids for select using(auth.uid()=bidder_id or exists(select 1 from listings where listings.id=bids.listing_id and listings.seller_id=auth.uid()));
 create policy "own bid insert" on bids for insert with check(auth.uid()=bidder_id);
 create policy "own purchases" on purchases for select using(auth.uid()=buyer_id or auth.uid()=seller_id);
+create or replace function handle_new_user() returns trigger language plpgsql security definer set search_path=public as $$begin insert into profiles(id,display_name) values(new.id,coalesce(new.raw_user_meta_data->>'display_name',split_part(new.email,'@',1))) on conflict(id) do nothing;return new;end;$$;
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created after insert on auth.users for each row execute procedure handle_new_user();
+
+-- Admin role support (safe to run on a fresh database; existing production
+-- project already has these changes applied separately).
+alter table profiles add column if not exists is_admin boolean not null default false;
+
+create or replace function public.is_current_user_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from public.profiles where id = auth.uid() and is_admin = true);
+$$;
+revoke all on function public.is_current_user_admin() from public;
+grant execute on function public.is_current_user_admin() to authenticated;
+
+-- Admin policies. Names are intentionally unique for a fresh install.
+drop policy if exists "admins can view all profiles" on profiles;
+drop policy if exists "admins can update listings" on listings;
+drop policy if exists "admins can delete listings" on listings;
+drop policy if exists "admins can view all bids" on bids;
+drop policy if exists "admins can view all purchases" on purchases;
+create policy "admins can view all profiles" on profiles for select using (auth.uid() = id or public.is_current_user_admin());
+create policy "admins can update listings" on listings for update using (auth.uid() = seller_id or public.is_current_user_admin()) with check (auth.uid() = seller_id or public.is_current_user_admin());
+create policy "admins can delete listings" on listings for delete using (auth.uid() = seller_id or public.is_current_user_admin());
+create policy "admins can view all bids" on bids for select using (auth.uid() = bidder_id or exists(select 1 from listings where listings.id = bids.listing_id and listings.seller_id = auth.uid()) or public.is_current_user_admin());
+create policy "admins can view all purchases" on purchases for select using (auth.uid() = buyer_id or auth.uid() = seller_id or public.is_current_user_admin());
