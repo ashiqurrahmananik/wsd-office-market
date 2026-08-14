@@ -45,8 +45,8 @@ export default async function AdminPage() {
         {activeBids.length ? activeBids.map((l:any)=>{
           const lb=(bids||[]).filter((b:any)=>b.listing_id===l.id).sort((a:any,b:any)=>Number(b.amount)-Number(a.amount))[0];
           return <div className="card flex flex-wrap items-center justify-between gap-4 p-5" key={l.id}>
-            <div><div className="text-xs font-bold text-orange-600">{l.category}</div><div className="text-lg font-black">{l.title}</div><div className="text-sm text-stone-500">Seller: {l.profiles?.display_name||"—"} · Ends {new Date(l.bid_end_time).toLocaleString()}</div></div>
-            <div className="text-right"><div className="text-xs font-bold text-stone-500">Current bid</div><div className="text-2xl font-black">৳{lb?.amount ?? l.starting_bid ?? 0}</div><div className="text-sm">{lb?.profiles?.display_name||"No bids yet"}</div></div>
+            <div><div className="text-xs font-bold text-orange-600">{l.category}</div><div className="text-lg font-black">{l.title}</div><div className="text-sm text-stone-500">Seller: {Array.isArray(l.profiles) ? (l.profiles[0]?.display_name || "—") : (l.profiles?.display_name || "—")} · Ends {new Date(l.bid_end_time).toLocaleString()}</div></div>
+            <div className="text-right"><div className="text-xs font-bold text-stone-500">Current bid</div><div className="text-2xl font-black">৳{lb?.amount ?? l.starting_bid ?? 0}</div><div className="text-sm">{Array.isArray(lb?.profiles) ? (lb?.profiles?.[0]?.display_name || "No bids yet") : (lb?.profiles?.display_name || "No bids yet")}</div></div>
           </div>
         }):<div className="card p-8 text-center text-stone-500">No live auctions right now.</div>}
       </div>
@@ -54,7 +54,7 @@ export default async function AdminPage() {
 
     <section className="mt-10">
       <h2 className="text-2xl font-black">📦 All Listings</h2>
-      <div className="card mt-4 overflow-x-auto"><table className="w-full min-w-[850px] text-left text-sm"><thead className="bg-orange-50"><tr><th className="p-4">Item</th><th>Seller</th><th>Price</th><th>Status</th><th>Type</th><th>Created</th></tr></thead><tbody>{(listings||[]).map((l:any)=><tr className="border-t border-stone-100" key={l.id}><td className="p-4 font-bold">{l.title}</td><td>{l.profiles?.display_name||"—"}</td><td>{l.price!=null?`৳${l.price}`:"—"}</td><td><span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-bold">{l.status}</span></td><td>{l.bid_enabled?"🔨 Bid":""}{l.buy_now_enabled?" 🛒 Buy":""}</td><td>{new Date(l.created_at).toLocaleDateString()}</td></tr>)}</tbody></table></div>
+      <div className="card mt-4 overflow-x-auto"><table className="w-full min-w-[850px] text-left text-sm"><thead className="bg-orange-50"><tr><th className="p-4">Item</th><th>Seller</th><th>Price</th><th>Status</th><th>Type</th><th>Created</th></tr></thead><tbody>{(listings||[]).map((l:any)=><tr className="border-t border-stone-100" key={l.id}><td className="p-4 font-bold">{l.title}</td><td>{Array.isArray(l.profiles) ? (l.profiles[0]?.display_name || "—") : (l.profiles?.display_name || "—")}</td><td>{l.price!=null?`৳${l.price}`:"—"}</td><td><span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-bold">{l.status}</span></td><td>{l.bid_enabled?"🔨 Bid":""}{l.buy_now_enabled?" 🛒 Buy":""}</td><td>{new Date(l.created_at).toLocaleDateString()}</td></tr>)}</tbody></table></div>
     </section>
 
     <section className="mt-10">
