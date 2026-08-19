@@ -14,7 +14,7 @@ export default async function MyBids() {
     .order("created_at", { ascending: false });
 
   // Dedupe to one row per listing, keeping the bidder's highest bid on each.
-  const byListing = new Map<string, (typeof bids)[number]>();
+  const byListing = new Map<string, any>();
   for (const b of bids || []) {
     const listing = Array.isArray(b.listings) ? b.listings[0] : b.listings;
     if (!listing) continue;

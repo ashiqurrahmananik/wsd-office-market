@@ -23,7 +23,7 @@ export default async function Listing({
   const isOwner = user?.id === l.seller_id;
   const isSold = l.status !== "AVAILABLE";
 
-  let bids: { id: string; amount: number; created_at: string; profiles: { display_name: string | null } | null }[] = [];
+  let bids: any[] = [];
   let highestBid: number | null = null;
   if (l.bid_enabled) {
     const { data: bidRows } = await supabase
@@ -121,7 +121,7 @@ export default async function Listing({
                   <ul className="mt-2 grid gap-1 text-sm">
                     {bids.map((b) => (
                       <li key={b.id} className="flex justify-between">
-                        <span>{b.profiles?.display_name || "Bidder"}</span>
+                        <span>{(Array.isArray(b.profiles) ? b.profiles[0]?.display_name : b.profiles?.display_name) || "Bidder"}</span>
                         <b>৳{b.amount}</b>
                       </li>
                     ))}
