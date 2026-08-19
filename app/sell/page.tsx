@@ -18,13 +18,47 @@ export default async function Sell({ searchParams }: { searchParams: Promise<{ e
           <option>Other</option>
         </select>
         <input className="input" name="quantity" type="number" min={1} defaultValue={1} placeholder="Quantity" required />
-        <input className="input" name="price" type="number" min={0} step="0.01" placeholder="Price (৳)" />
         <textarea className="input md:col-span-2" name="description" rows={5} placeholder="Description" />
         <input className="input md:col-span-2" name="pickup_location" placeholder="Pickup location" required />
+
         <div className="md:col-span-2">
           <label className="mb-2 block text-sm font-bold text-stone-600">Photo (optional)</label>
           <input className="input" name="image" type="file" accept="image/*" />
         </div>
+
+        <fieldset className="md:col-span-2 rounded-2xl border border-stone-200 p-5">
+          <legend className="px-2 text-sm font-bold text-stone-600">How do you want to sell it?</legend>
+          <div className="flex gap-6">
+            <label className="flex items-center gap-2 text-sm font-bold">
+              <input type="radio" name="sale_type" value="buy_now" defaultChecked />
+              Fixed price (Buy Now)
+            </label>
+            <label className="flex items-center gap-2 text-sm font-bold">
+              <input type="radio" name="sale_type" value="auction" />
+              Auction (bidding)
+            </label>
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-xs font-bold text-stone-500">Price (৳) — for fixed price</label>
+              <input className="input" name="price" type="number" min={0} step="0.01" placeholder="e.g. 50" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-bold text-stone-500">Starting bid (৳) — for auction</label>
+              <input className="input" name="starting_bid" type="number" min={0} step="0.01" placeholder="e.g. 20" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-bold text-stone-500">Auction start (optional)</label>
+              <input className="input" name="bid_start_time" type="datetime-local" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-bold text-stone-500">Auction end</label>
+              <input className="input" name="bid_end_time" type="datetime-local" />
+            </div>
+          </div>
+        </fieldset>
+
         <button className="btn btn-primary md:col-span-2">Create Listing</button>
       </form>
     </main>
