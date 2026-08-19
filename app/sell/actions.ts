@@ -19,23 +19,9 @@ export async function createListing(formData: FormData) {
     }
   }
 
-  const saleType = String(formData.get("sale_type") || "buy_now");
-  const isAuction = saleType === "auction";
-
-  if (isAuction) {
-    const startingBid = formData.get("starting_bid");
-    const bidEndTime = formData.get("bid_end_time");
-    if (!startingBid || Number(startingBid) <= 0) {
-      redirect("/sell?error=" + encodeURIComponent("Enter a starting bid for the auction."));
-    }
-    if (!bidEndTime) {
-      redirect("/sell?error=" + encodeURIComponent("Pick an auction end time."));
-    }
-  } else {
-    const price = formData.get("price");
-    if (!price || Number(price) <= 0) {
-      redirect("/sell?error=" + encodeURIComponent("Enter a price for the listing."));
-    }
+  const price = formData.get("price");
+  if (!price || Number(price) <= 0) {
+    redirect("/sell?error=" + encodeURIComponent("Enter a price for the listing."));
   }
 
   const { error } = await supabase.from("listings").insert({
@@ -46,12 +32,9 @@ export async function createListing(formData: FormData) {
     quantity: Number(formData.get("quantity") || 1),
     pickup_location: String(formData.get("pickup_location") || ""),
     image_url,
-    buy_now_enabled: !isAuction,
-    price: !isAuction ? Number(formData.get("price")) : null,
-    bid_enabled: isAuction,
-    starting_bid: isAuction ? Number(formData.get("starting_bid")) : null,
-    bid_start_time: isAuction && formData.get("bid_start_time") ? new Date(String(formData.get("bid_start_time"))).toISOString() : (isAuction ? new Date().toISOString() : null),
-    bid_end_time: isAuction && formData.get("bid_end_time") ? new Date(String(formData.get("bid_end_time"))).toISOString() : null,
+    buy_now_enabled: true,
+    price: Number(price),
+    bid_enabled: false,
   });
 
   if (error) redirect("/sell?error=" + encodeURIComponent(error.message));

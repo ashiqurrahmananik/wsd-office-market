@@ -1,2 +1,70 @@
-import Link from "next/link";import {createClient} from "@/lib/supabase/server";
-export default async function Home(){const supabase=await createClient();const {data:listings}=await supabase.from("listings").select("id,title,price,category,mood").eq("status","AVAILABLE").order("created_at",{ascending:false}).limit(8);return <main><section className="mx-auto max-w-6xl px-4 py-16"><div className="card p-8 md:p-14"><div className="max-w-3xl"><div className="mb-4 inline-block rounded-full bg-orange-100 px-4 py-2 text-sm font-bold text-orange-700">🏢 Your office. Your marketplace.</div><h1 className="text-5xl font-black tracking-tight md:text-7xl">Don't eat it.<br/><span className="text-orange-500">Sell it. 😋</span></h1><p className="mt-5 text-lg text-stone-600">Got too much cake? Extra lunch? A drink you don't want? Let someone at the office rescue it.</p><div className="mt-8 flex flex-wrap gap-3"><Link className="btn btn-primary" href="/sell">Sell Something</Link><Link className="btn btn-secondary" href="/browse">Browse Food</Link></div></div></div></section><section className="mx-auto max-w-6xl px-4 pb-16"><div className="mb-6"><p className="font-bold text-orange-500">😋 Everything</p><h2 className="text-3xl font-black">Fresh from the office</h2></div>{listings?.length?<div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{listings.map(l=><article className="card p-5" key={l.id}><div className="text-xs font-bold text-stone-500">{l.mood||l.category}</div><h3 className="mt-2 text-lg font-black">{l.title}</h3><b className="mt-4 block">{l.price!=null?`৳${l.price}`:"Bidding"}</b><Link href={`/listing/${l.id}`} className="btn btn-secondary mt-4 w-full text-xs">View</Link></article>)}</div>:<div className="card p-10 text-center"><div className="text-5xl">🍽️</div><h2 className="mt-3 text-2xl font-black">Nothing on the office menu yet</h2><p className="mt-2 text-stone-500">Be the first person to sell something!</p><Link href="/sell" className="btn btn-primary mt-5">Create Listing</Link></div>}</section></main>}
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: listings } = await supabase
+    .from("listings")
+    .select("id,title,price,category,mood,image_url")
+    .eq("status", "AVAILABLE")
+    .order("created_at", { ascending: false })
+    .limit(8);
+
+  return (
+    <main>
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <div className="card p-8 md:p-14">
+          <div className="max-w-3xl">
+            <div className="mb-4 inline-block rounded-full bg-orange-100 px-4 py-2 text-sm font-bold text-orange-700">
+              🏢 Your office. Your marketplace.
+            </div>
+            <h1 className="text-5xl font-black tracking-tight md:text-7xl">
+              Don't eat it.
+              <br />
+              <span className="text-orange-500">Sell it. 😋</span>
+            </h1>
+            <p className="mt-5 text-lg text-stone-600">
+              Got too much cake? Extra lunch? A drink you don't want? Let someone at the office rescue it.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link className="btn btn-primary" href="/sell">Sell Something</Link>
+              <Link className="btn btn-secondary" href="/browse">Browse Food</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="mx-auto max-w-6xl px-4 pb-16">
+        <div className="mb-6">
+          <p className="font-bold text-orange-500">😋 Everything</p>
+          <h2 className="text-3xl font-black">Fresh from the office</h2>
+        </div>
+        {listings?.length ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {listings.map((l) => (
+              <article className="card p-5" key={l.id}>
+                <div className="flex h-32 items-center justify-center overflow-hidden rounded-2xl bg-orange-50 text-5xl">
+                  {l.image_url ? (
+                    <img src={l.image_url} alt={l.title} className="h-full w-full object-cover" />
+                  ) : (
+                    "🍱"
+                  )}
+                </div>
+                <div className="mt-4 text-xs font-bold text-stone-500">{l.mood || l.category}</div>
+                <h3 className="mt-2 text-lg font-black">{l.title}</h3>
+                <b className="mt-4 block">{l.price != null ? `৳${l.price}` : "Bidding"}</b>
+                <Link href={`/listing/${l.id}`} className="btn btn-secondary mt-4 w-full text-xs">View</Link>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="card p-10 text-center">
+            <div className="text-5xl">🍽️</div>
+            <h2 className="mt-3 text-2xl font-black">Nothing on the office menu yet</h2>
+            <p className="mt-2 text-stone-500">Be the first person to sell something!</p>
+            <Link href="/sell" className="btn btn-primary mt-5">Create Listing</Link>
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
